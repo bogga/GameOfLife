@@ -1,3 +1,6 @@
+from operator import itemgetter
+import sys
+
 class Cell(object):
 
     def __init__(self, x, y):
@@ -46,7 +49,7 @@ class Game(object):
         for key in self.cells:
             cell = self.cells[key]
             neighbours = cell.count_neighbours(self.cells)
-            print("Cell @ {0}, {1} has {2} neighbours".format(key[0], key[1], neighbours))
+            # print("Cell @ {0}, {1} has {2} neighbours".format(key[0], key[1], neighbours))
             if neighbours is 2 or neighbours is 3: # survival
                 surviving_cells[key] = cell
 
@@ -64,10 +67,30 @@ class Game(object):
         
         self.cells = surviving_cells
 
+    def display(self):
+        max_x = max(self.cells, key=itemgetter(0))[0] + 2
+        max_y = max(self.cells, key=itemgetter(1))[1] + 2
+
+        cells = [["-" for col in range(max_x + 1)] for row in range(max_y + 1)]
+
+        for key in self.cells:
+            cells[key[1]][key[0]] = "X"
+
+        for row in cells:
+            for col in row:
+                print(col, end="")
+            print()
+
+
 # cells = {(2, 2): Cell(2, 2), (2, 3): Cell(2, 3), (2, 4): Cell(2, 4), (5, 5): Cell(5, 5)}
 cells = [(2, 2), (2, 3), (2, 4), (5, 5)]
+
 g = Game(cells)
 
-for i in range(20):
+print("------------- Initial State -------------")
+g.display()
+
+for i in range(1, 6):
     print("------------- Gen {0} -------------".format(i))
     g.evolve()
+    g.display()
