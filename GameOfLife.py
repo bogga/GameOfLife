@@ -38,8 +38,15 @@ class Game(object):
                 self.cells = {}
                 for loc in cells:
                     self.cells[loc] = Cell(loc[0], loc[1])
+            else:
+                print("Incompatible format of cells! Starting with blank.")
+                self.cells = {}
         else:
             self.cells = {}
+
+    def add_cells(self, locations):
+        for loc in locations:
+            self.cells[(loc[0], loc[1])] = Cell(loc[0], loc[1])
 
     def evolve(self):
         '''
@@ -58,12 +65,11 @@ class Game(object):
                 for j in range(-1, 2):
                     x = key[0] + i
                     y = key[1] + j
-                    if x >= 0 and y >= 0:
-                        if (x, y) not in surviving_cells:
-                            c = Cell(x, y)
-                            if c.count_neighbours(self.cells) == 3: # generation
-                                # print("New cell @ {0}, {1}".format(x, y))
-                                surviving_cells[(x, y)] = c
+                    if (x, y) not in surviving_cells:
+                        c = Cell(x, y)
+                        if c.count_neighbours(self.cells) == 3: # generation
+                            # print("New cell @ {0}, {1}".format(x, y))
+                            surviving_cells[(x, y)] = c
         
         self.cells = surviving_cells
 
@@ -71,10 +77,13 @@ class Game(object):
         max_x = max(self.cells, key=itemgetter(0))[0] + 2
         max_y = max(self.cells, key=itemgetter(1))[1] + 2
 
-        cells = [["." for col in range(max_x + 1)] for row in range(max_y + 1)]
+        min_x = min(self.cells, key=itemgetter(0))[0] - 2
+        min_y = min(self.cells, key=itemgetter(1))[1] - 2
+
+        cells = [["." for col in range(min_x, max_x + 1)] for row in range(min_y, max_y + 1)]
 
         for key in self.cells:
-            cells[key[1]][key[0]] = "X"
+            cells[key[1]- min_y][key[0] - min_x] = "X"
 
         for row in cells:
             for col in row:
@@ -83,14 +92,22 @@ class Game(object):
 
 
 # cells = {(2, 2): Cell(2, 2), (2, 3): Cell(2, 3), (2, 4): Cell(2, 4), (5, 5): Cell(5, 5)}
-cells = [(2, 2), (2, 3), (2, 4), (5, 5), (8, 3), (9, 3), (10, 3), (7, 4), (8, 4), (9, 4)]
+# cells = [(2, 2), (2, 3), (2, 4), (5, 5), (8, 3), (9, 3), (10, 3), (7, 4), (8, 4), (9, 4)]
+
+# right-moving ship
+# cells = [(2, 2), (2, 3), (3, 2), (3, 3), (3, 4), (4, 1), (4, 3), (4, 4), (5, 1), (5, 2), (5, 3), (6, 2)]
+
+# left-moving ship
+cells = [(2, 4), (3, 3), (3, 4), (3, 5), (4, 2), (4, 3), (4, 5), (5, 2), (5, 3), (5, 4), (6, 2), (6, 3), (6, 4), (7, 3), (7, 4)]
 
 g = Game(cells)
 
 print("========== Initial State ==========")
 g.display()
 
-for i in range(1, 6):
+for i in range(1, 200):
     print("========== Gen {0} ==========".format(i))
     g.evolve()
     g.display()
+
+# g.display()
