@@ -71,7 +71,7 @@ class Game(object):
         max_x = max(self.cells, key=itemgetter(0))[0] + 2
         max_y = max(self.cells, key=itemgetter(1))[1] + 2
 
-        cells = [["-" for col in range(max_x + 1)] for row in range(max_y + 1)]
+        cells = [["." for col in range(max_x + 1)] for row in range(max_y + 1)]
 
         for key in self.cells:
             cells[key[1]][key[0]] = "X"
@@ -83,14 +83,14 @@ class Game(object):
 
 
 # cells = {(2, 2): Cell(2, 2), (2, 3): Cell(2, 3), (2, 4): Cell(2, 4), (5, 5): Cell(5, 5)}
-cells = [(2, 2), (2, 3), (2, 4), (5, 5)]
+cells = [(2, 2), (2, 3), (2, 4), (5, 5), (8, 3), (9, 3), (10, 3), (7, 4), (8, 4), (9, 4)]
 
 g = Game(cells)
 
-print("------------- Initial State -------------")
+print("========== Initial State ==========")
 g.display()
 
 for i in range(1, 6):
-    print("------------- Gen {0} -------------".format(i))
+    print("========== Gen {0} ==========".format(i))
     g.evolve()
     g.display()
