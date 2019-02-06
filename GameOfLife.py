@@ -45,8 +45,14 @@ class Game(object):
             self.cells = {}
 
     def add_cells(self, locations):
-        for loc in locations:
-            self.cells[(loc[0], loc[1])] = Cell(loc[0], loc[1])
+        '''
+        Adds cells to the list of living cells.
+        '''
+        if isinstance(locations, list):
+            for loc in locations:
+                self.cells[loc] = Cell(loc[0], loc[1])
+        elif isinstance(locations, tuple):
+            self.cells[(locations[0], locations[1])] = Cell(locations[0], locations[1])
 
     def evolve(self):
         '''
@@ -56,7 +62,6 @@ class Game(object):
         for key in self.cells:
             cell = self.cells[key]
             neighbours = cell.count_neighbours(self.cells)
-            # print("Cell @ {0}, {1} has {2} neighbours".format(key[0], key[1], neighbours))
             if neighbours is 2 or neighbours is 3: # survival
                 surviving_cells[key] = cell
 
@@ -68,12 +73,15 @@ class Game(object):
                     if (x, y) not in surviving_cells:
                         c = Cell(x, y)
                         if c.count_neighbours(self.cells) == 3: # generation
-                            # print("New cell @ {0}, {1}".format(x, y))
                             surviving_cells[(x, y)] = c
         
         self.cells = surviving_cells
 
     def display(self):
+        '''
+        Displays the current state of the world to the console.
+        Calculates the range of living cells and prints around them.
+        '''
         if len(self.cells) > 0:
             max_x = max(self.cells, key=itemgetter(0))[0] + 2
             max_y = max(self.cells, key=itemgetter(1))[1] + 2
@@ -91,7 +99,7 @@ class Game(object):
         cells = [["." for col in range(min_x, max_x + 1)] for row in range(min_y, max_y + 1)]
 
         for key in self.cells:
-            cells[key[1]- min_y][key[0] - min_x] = "X"
+            cells[key[1] - min_y][key[0] - min_x] = "X"
 
         for row in cells:
             for col in row:
@@ -106,27 +114,35 @@ block = [(1, 1), (1, 2), (2, 1), (2, 2)]
 
 print("Welcome to the Game of Life!\nPlease note that the display works by creating a 'screen' around the living cells, and as such the world may look less active.")
 while True:
-    option = input("Please select an option by entering its number:\n1) User-specified setup\n2) Preset setup\n> ")
-    if option == "1":
-        start = input("Please enter a list of cell coordiantes, as such: '(1, 2), (8, 5), (4, 3)'. Non-valid characters will be filtered out.\n> ")
-        nums = [int(i) for i in re.findall("[0-9+]", start)]
-        cells = []
-        for i in range(int(len(nums)/2)):
-            cells.append((nums[i], nums[i+1]))
-    elif option == "2":
-        setup_choices = [("Right-moving ship", right_moving_ship), ("Left-moving ship", left_moving_ship), ("Blinker", blinker), ("Toad", toad), ("Block", block)]
-        setup_text = ""
-        for i, item in enumerate(setup_choices):
-            setup_text = setup_text + str(i + 1) + ") " + item[0] + "\n"
-        setup = int(input("Please select an option by entering its number:\n" + setup_text + "> ")) - 1
-        cells = setup_choices[setup][1]
+    while True:
+        option = input("Please select an option by entering its number:\n1) User-specified setup\n2) Preset setup\n> ")
+        if option == "1":
+            start = input("Please enter a list of cell coordiantes, as such: '(1, 2), (8, 5), (4, 3)'. Non-valid characters will be filtered out.\n> ")
+            nums = [int(i) for i in re.findall("[0-9+]", start)]
+            cells = []
+            for i in range(int(len(nums)/2)):
+                cells.append((nums[i], nums[i+1]))
+            break
+        elif option == "2":
+            setup_choices = [("Right-moving ship", right_moving_ship), ("Left-moving ship", left_moving_ship), ("Blinker", blinker), ("Toad", toad), ("Block", block)]
+            setup_text = ""
+            for i, item in enumerate(setup_choices):
+                setup_text = setup_text + str(i + 1) + ") " + item[0] + "\n"
+            while True:
+                setup = int(input("Please select an option by entering its number:\n" + setup_text + "> ")) - 1
+                if setup < len(setup_choices):
+                    cells = setup_choices[setup][1]
+                    break
+                else:
+                    print("Invalid input.")
+            break
 
     g = Game(cells)
 
     print("========== Initial State ==========")
     g.display()
 
-    print("Please press enter when you want to progress. Type 'quit' to quit or 'menu' to return to the menu")
+    print("Please press enter when you want to progress. Type 'quit' to quit or 'menu' to return to the menu. You can also type 'add' to add cells to the world.")
     iteration = 0
 
     while True:
@@ -135,6 +151,14 @@ while True:
             sys.exit(0)
         elif choice == "menu":
             break
+        elif choice == "add":
+            start = input("Please enter a list of cell coordiantes, as such: '(1, 2), (8, 5), (4, 3)'. Non-valid characters will be filtered out.\n> ")
+            nums = [int(i) for i in re.findall("-*[0-9]+", start)]
+            cells = []
+            for i in range(0, len(nums), 2):
+                cells.append((nums[i], nums[i+1]))
+            g.add_cells(cells)
+            g.display()
         else:
             print("========== Gen {0} ==========".format(iteration))
             iteration += 1
