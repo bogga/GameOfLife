@@ -1,5 +1,5 @@
 from operator import itemgetter
-import sys
+import sys, re
 
 class Cell(object):
 
@@ -74,11 +74,19 @@ class Game(object):
         self.cells = surviving_cells
 
     def display(self):
-        max_x = max(self.cells, key=itemgetter(0))[0] + 2
-        max_y = max(self.cells, key=itemgetter(1))[1] + 2
+        if len(self.cells) > 0:
+            max_x = max(self.cells, key=itemgetter(0))[0] + 2
+            max_y = max(self.cells, key=itemgetter(1))[1] + 2
 
-        min_x = min(self.cells, key=itemgetter(0))[0] - 2
-        min_y = min(self.cells, key=itemgetter(1))[1] - 2
+            min_x = min(self.cells, key=itemgetter(0))[0] - 2
+            min_y = min(self.cells, key=itemgetter(1))[1] - 2
+        else:
+            max_x = 5
+            max_y = 5
+
+            min_x = 0
+            min_y = 0
+
 
         cells = [["." for col in range(min_x, max_x + 1)] for row in range(min_y, max_y + 1)]
 
@@ -90,24 +98,45 @@ class Game(object):
                 print(col, end="")
             print()
 
+right_moving_ship = [(2, 2), (2, 3), (3, 2), (3, 3), (3, 4), (4, 1), (4, 3), (4, 4), (5, 1), (5, 2), (5, 3), (6, 2)]
+left_moving_ship = [(2, 4), (3, 3), (3, 4), (3, 5), (4, 2), (4, 3), (4, 5), (5, 2), (5, 3), (5, 4), (6, 2), (6, 3), (6, 4), (7, 3), (7, 4)]
+blinker = [(1, 1), (1, 2), (1, 3)]
+toad = [(2, 1), (3, 1), (4, 1), (1, 2), (2, 2), (3, 2)]
+block = [(1, 1), (1, 2), (2, 1), (2, 2)]
 
-# cells = {(2, 2): Cell(2, 2), (2, 3): Cell(2, 3), (2, 4): Cell(2, 4), (5, 5): Cell(5, 5)}
-# cells = [(2, 2), (2, 3), (2, 4), (5, 5), (8, 3), (9, 3), (10, 3), (7, 4), (8, 4), (9, 4)]
+print("Welcome to the Game of Life!\nPlease note that the display works by creating a 'screen' around the living cells, and as such the world may look less active.")
+while True:
+    option = input("Please select an option by entering its number:\n1) User-specified setup\n2) Preset setup\n> ")
+    if option == "1":
+        start = input("Please enter a list of cell coordiantes, as such: '(1, 2), (8, 5), (4, 3)'. Non-valid characters will be filtered out.\n> ")
+        nums = [int(i) for i in re.findall("[0-9+]", start)]
+        cells = []
+        for i in range(int(len(nums)/2)):
+            cells.append((nums[i], nums[i+1]))
+    elif option == "2":
+        setup_choices = [("Right-moving ship", right_moving_ship), ("Left-moving ship", left_moving_ship), ("Blinker", blinker), ("Toad", toad), ("Block", block)]
+        setup_text = ""
+        for i, item in enumerate(setup_choices):
+            setup_text = setup_text + str(i + 1) + ") " + item[0] + "\n"
+        setup = int(input("Please select an option by entering its number:\n" + setup_text + "> ")) - 1
+        cells = setup_choices[setup][1]
 
-# right-moving ship
-# cells = [(2, 2), (2, 3), (3, 2), (3, 3), (3, 4), (4, 1), (4, 3), (4, 4), (5, 1), (5, 2), (5, 3), (6, 2)]
+    g = Game(cells)
 
-# left-moving ship
-cells = [(2, 4), (3, 3), (3, 4), (3, 5), (4, 2), (4, 3), (4, 5), (5, 2), (5, 3), (5, 4), (6, 2), (6, 3), (6, 4), (7, 3), (7, 4)]
-
-g = Game(cells)
-
-print("========== Initial State ==========")
-g.display()
-
-for i in range(1, 200):
-    print("========== Gen {0} ==========".format(i))
-    g.evolve()
+    print("========== Initial State ==========")
     g.display()
 
-# g.display()
+    print("Please press enter when you want to progress. Type 'quit' to quit or 'menu' to return to the menu")
+    iteration = 0
+
+    while True:
+        choice = input("> ").lower()
+        if choice == "quit":
+            sys.exit(0)
+        elif choice == "menu":
+            break
+        else:
+            print("========== Gen {0} ==========".format(iteration))
+            iteration += 1
+            g.evolve()
+            g.display()
